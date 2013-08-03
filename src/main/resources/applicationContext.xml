@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	 http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+	http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
+	
+	<context:property-placeholder location="classpath:app.properties"/>
+
+	<bean id="twitter" class="org.apache.camel.component.twitter.TwitterComponent">
+		<property name="accessToken" value="${twitter.accessToken}" />
+		<property name="accessTokenSecret" value="${twitter.accessTokenSecret}" />
+		<property name="consumerKey" value="${twitter.consumerKey}" />
+		<property name="consumerSecret" value="${twitter.consumerSecret}" />	
+	</bean>
+	
+	
+	<camelContext xmlns="http://camel.apache.org/schema/spring" delayer="10">
+	
+		<endpoint id="gtalk" uri="xmpp://${gtalk.user.curto}@talk.google.com:5222/${gtalk.user.longo}?serviceName=gmail.com&amp;user=${gtalk.user.longo}&amp;password=${gtalk.senha}"/>
+		
+		<route>
+			<from uri="timer://online?repeatCount=1" />
+			<setBody>
+				<constant>Pronto para tuitar pelo Gtalk :)</constant>
+			</setBody>
+			<to uri="ref:gtalk" />
+		</route>
+		
+		<route>
+			<from uri="ref:gtalk" />
+			<log message="${body}" />
+			<to uri="twitter://timeline/user" />
+		</route>
+	
+	</camelContext>
+
+
+</beans>
+
